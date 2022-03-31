@@ -74,7 +74,7 @@ class App {
     this._getCurrentPosition();
     inputType.addEventListener('change', this._selectToggle);
     form.addEventListener('submit', this._createObj.bind(this));
-    this._getLocalStorage();
+    containerWorkouts.addEventListener('click', this._moveCenter.bind(this));
   }
 
   //1 geolokatsiyani olish
@@ -101,6 +101,26 @@ class App {
     this._showForm();
 
     this._getLocalStorage();
+
+    L.Routing.control({
+      waypoints: [L.latLng(41.3398161, 69.2888034), L.latLng(41.34, 69.29)],
+      lineOptions: {
+        styles: [{ color: 'purple', opacity: 0.8, weight: 5 }],
+      },
+    })
+      .on('routesfound', function (e) {
+        console.log(e.routes[0].summary.totalDistance);
+        // console.log(route.summary.totalDistance);
+      })
+      .addTo(map);
+    let leafletRoutingContainer = document
+      .querySelector('.leaflet-routing-container')
+      .classList.add('leaflet-routing-container-hide');
+    // leafletRoutingContainer.addEventListener('click', function () {
+    //   leafletRoutingContainer.classList.toggle(
+    //     'leaflet-routing-container-hide'
+    //   );
+    // });
   }
   //3 formani ochish
   _showForm() {
@@ -285,6 +305,26 @@ class App {
   _removeLocalStorage() {
     localStorage.removeItem('mashqlar');
     location.reload();
+  }
+
+  _moveCenter(e) {
+    let el = e.target.closest('.workout');
+    console.log(el);
+    if (!el) return;
+    let elementId = el.getAttribute('data-id');
+
+    let objs = this.#mashqlar.find(val => {
+      return val.id === elementId;
+    });
+    console.log(objs);
+
+    map.setView(objs.coords, 17, {
+      animate: true,
+      pan: {
+        duration: 0.5,
+      },
+    });
+    L.circle(objs.coords, { radius: 50 }).addTo(map);
   }
 }
 
